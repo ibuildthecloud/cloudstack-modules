@@ -1,5 +1,6 @@
 package org.apache.cloudstack.spring.module.model;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.core.io.Resource;
@@ -14,8 +15,12 @@ public interface ModuleDefinition {
     
     List<Resource> getContextLocations();
     
-    List<Resource> getInheritableContexts();
+    List<Resource> getInheritableContextLocations();
     
     boolean isValid();
+    
+    Collection<ModuleDefinition> getChildren();
+    
+    void addChild(ModuleDefinition childDef);
     
 }

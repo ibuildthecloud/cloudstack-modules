@@ -2,13 +2,15 @@ package org.apache.cloudstack.spring.module.model.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.TreeMap;
 
 import org.apache.cloudstack.spring.module.model.ModuleDefinition;
-import org.apache.cloudstack.spring.module.util.ModulePathUtils;
+import org.apache.cloudstack.spring.module.util.ModuleLocationUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -28,7 +30,8 @@ public class DefaultModuleDefinition implements ModuleDefinition {
     
     List<Resource> configLocations;
     List<Resource> contextLocations;
-    List<Resource> inheritableContexts = new ArrayList<Resource>();
+    List<Resource> inheritableContextLocations;
+    Map<String, ModuleDefinition> children = new TreeMap<String, ModuleDefinition>();
     
     public DefaultModuleDefinition(String baseDir, Resource moduleProperties, ResourcePatternResolver resolver) {
         this.baseDir = baseDir;
@@ -44,10 +47,11 @@ public class DefaultModuleDefinition implements ModuleDefinition {
         
         resolveNameAndParent();
         
-        contextLocations = Arrays.asList(resolver.getResources(ModulePathUtils.getContextLocation(baseDir, name)));
-        configLocations = Arrays.asList(resolver.getResources(ModulePathUtils.getDefaultsLocation(baseDir, name)));
+        contextLocations = Arrays.asList(resolver.getResources(ModuleLocationUtils.getContextLocation(baseDir, name)));
+        configLocations = Arrays.asList(resolver.getResources(ModuleLocationUtils.getDefaultsLocation(baseDir, name)));
+        inheritableContextLocations = Arrays.asList(resolver.getResources(ModuleLocationUtils.getInheritableContextLocation(baseDir, name)));
 
-        if ( configLocations.size() > 0 )
+        if ( contextLocations.size() > 0 )
             valid = true;
     }
     
@@ -77,7 +81,7 @@ public class DefaultModuleDefinition implements ModuleDefinition {
     }
     
     protected void checkNameMatchesSelf() throws IOException {
-        String expectedLocation = ModulePathUtils.getModuleLocation(baseDir, name);
+        String expectedLocation = ModuleLocationUtils.getModuleLocation(baseDir, name);
         Resource self = resolver.getResource(expectedLocation);
         
         if ( ! self.exists() ) {
@@ -98,6 +102,14 @@ public class DefaultModuleDefinition implements ModuleDefinition {
     private String location() throws IOException {
         return moduleProperties.getURL().toString();
     }
+    
+    public void addChild(ModuleDefinition def) {
+        children.put(def.getName(), def);
+    }
+    
+    public Collection<ModuleDefinition> getChildren() {
+        return children.values();
+    }
 
     public String getName() {
         return name;
@@ -115,8 +127,8 @@ public class DefaultModuleDefinition implements ModuleDefinition {
         return contextLocations;
     }
 
-    public List<Resource> getInheritableContexts() {
-        return inheritableContexts;
+    public List<Resource> getInheritableContextLocations() {
+        return inheritableContextLocations;
     }
 
     public boolean isValid() {
