@@ -1,23 +1,19 @@
 package org.apache.cloudstack.spring.module.factory;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.cloudstack.spring.module.model.ModuleDefinition;
 import org.apache.cloudstack.spring.module.model.ModuleDefinitionSet;
-import org.apache.cloudstack.spring.module.model.impl.DefaultModuleDefinition;
 import org.apache.cloudstack.spring.module.model.impl.DefaultModuleDefinitionSet;
-import org.apache.cloudstack.spring.module.util.ModuleLocationUtils;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
 
 public class ModuleBasedContextFactory {
 
-    public ModuleDefinitionSet loadModules(String baseName, String root) throws IOException {
+    public ModuleDefinitionSet loadModules(Collection<ModuleDefinition> defs, String root) throws IOException {
         
-        Map<String, ModuleDefinition> modules = getModules(baseName, root);
+        Map<String, ModuleDefinition> modules = wireUpModules(root, defs);
         
         DefaultModuleDefinitionSet moduleSet = new DefaultModuleDefinitionSet(modules, root);
         moduleSet.load();
@@ -25,33 +21,15 @@ public class ModuleBasedContextFactory {
         return moduleSet;
     }
     
-    protected ResourcePatternResolver getResolver() {
-        return new PathMatchingResourcePatternResolver();
-    }
+   
     
-    protected Map<String, ModuleDefinition> getModules(String baseName, String root) throws IOException {
-        ResourcePatternResolver resolver = getResolver();
+    protected Map<String, ModuleDefinition> wireUpModules(String root, Collection<ModuleDefinition> defs) throws IOException {
+        Map<String, ModuleDefinition> modules = new HashMap<String, ModuleDefinition>();
         
-        Map<String, ModuleDefinition> allModules = discoverModules(baseName, resolver);
-        
-        return wireUpModules(root, allModules);
-    }
-    
-    protected Map<String, ModuleDefinition> discoverModules(String baseDir, ResourcePatternResolver resolver) throws IOException {
-        Map<String, ModuleDefinition> result = new HashMap<String, ModuleDefinition>();
-        
-        for ( Resource r : resolver.getResources(ModuleLocationUtils.getModulesLocation(baseDir)) ) {
-            DefaultModuleDefinition def = new DefaultModuleDefinition(baseDir, r, resolver);
-            def.init();
-            
-            if ( def.isValid() )
-                result.put(def.getName(), def);
+        for ( ModuleDefinition def : defs ) {
+            modules.put(def.getName(), def);
         }
         
-        return result;
-    }
-    
-    protected Map<String, ModuleDefinition> wireUpModules(String root, Map<String, ModuleDefinition> modules) throws IOException {
         ModuleDefinition rootDef = null;
         Map<String, ModuleDefinition> result = new HashMap<String, ModuleDefinition>();
         

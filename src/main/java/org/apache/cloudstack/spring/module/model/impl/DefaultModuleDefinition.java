@@ -135,4 +135,8 @@ public class DefaultModuleDefinition implements ModuleDefinition {
         return valid;
     }
 
+    public ClassLoader getClassLoader() {
+        return resolver.getClassLoader();
+    }
+
 }

@@ -7,6 +7,8 @@ import org.springframework.core.io.Resource;
 
 public interface ModuleDefinition {
     
+    ClassLoader getClassLoader();
+    
     String getName();
     
     String getParentName();

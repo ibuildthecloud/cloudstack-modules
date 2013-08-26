@@ -78,6 +78,7 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
         Resource[] resources = getConfigResources(def.getName());
         context.setConfigResources(resources);
         context.setParent(parent);
+        context.setClassLoader(def.getClassLoader());
 
         log.info("Loading module context [{}]", def.getName());
         context.refresh();
