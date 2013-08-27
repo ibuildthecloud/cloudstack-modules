@@ -185,4 +185,8 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
         
         return resources.toArray(new Resource[resources.size()]);
     }
+
+    public ModuleDefinition getModuleDefinition(String name) {
+        return modules.get(name);
+    }
 }
