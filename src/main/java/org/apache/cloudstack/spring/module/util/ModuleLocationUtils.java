@@ -2,7 +2,7 @@ package org.apache.cloudstack.spring.module.util;
 
 public class ModuleLocationUtils {
 
-    private static final String ALL_MODULE_PROPERTIES = "classpath:%s/*/module.properties";
+    private static final String ALL_MODULE_PROPERTIES = "classpath*:%s/*/module.properties";
     private static final String MODULE_PROPERTIES = "classpath:%s/%s/module.properties";
     private static final String CONTEXT_LOCATION = "classpath*:%s/%s/*context.xml";
     private static final String INHERTIABLE_CONTEXT_LOCATION = "classpath*:%s/%s/*context-inheritable.xml";

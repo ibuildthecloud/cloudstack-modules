@@ -80,8 +80,10 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
         context.setParent(parent);
         context.setClassLoader(def.getClassLoader());
 
+        long start = System.currentTimeMillis();
         log.info("Loading module context [{}]", def.getName());
         context.refresh();
+        log.info("Loaded module context [{}] in {} ms", def.getName(), (System.currentTimeMillis() - start));
         
         contexts.put(def.getName(), context);
         

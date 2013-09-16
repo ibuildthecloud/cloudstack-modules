@@ -21,8 +21,6 @@ public class ModuleBasedContextFactory {
         return moduleSet;
     }
     
-   
-    
     protected Map<String, ModuleDefinition> wireUpModules(String root, Collection<ModuleDefinition> defs) throws IOException {
         Map<String, ModuleDefinition> modules = new HashMap<String, ModuleDefinition>();
         
@@ -52,6 +50,11 @@ public class ModuleBasedContextFactory {
     protected Map<String, ModuleDefinition> traverse(ModuleDefinition base, Map<String, ModuleDefinition> result) {
         if ( base == null )
             return result;
+        
+        if ( result.containsKey(base.getName()) ) {
+            throw new RuntimeException("Circular dependency to [" + base.getName() + "] from current set " +
+                    result.keySet());
+        }
         
         result.put(base.getName(), base);
         
