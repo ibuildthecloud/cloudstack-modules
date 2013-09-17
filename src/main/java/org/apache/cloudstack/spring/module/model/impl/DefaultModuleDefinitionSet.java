@@ -14,6 +14,7 @@ import org.apache.cloudstack.spring.module.model.ModuleDefinition;
 import org.apache.cloudstack.spring.module.model.ModuleDefinitionSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,6 +45,7 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
         
         printHierarchy();
         loadContexts();
+        startContexts();
     }
     
     protected boolean loadRootContext() {
@@ -59,6 +61,25 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
         return true;
     }
     
+    protected void startContexts() {
+        withModule(new WithModule() {
+            public void with(ModuleDefinition def, Stack<ModuleDefinition> parents) {
+                try {
+                    ApplicationContext context = getApplicationContext(def.getName());
+                    try {
+                        Runnable runnable = context.getBean("moduleStartup", Runnable.class);
+                        log.info("Starting module [{}]", def.getName());
+                        runnable.run();
+                    } catch ( BeansException e ) {
+                       // Ignore 
+                    }
+                } catch ( EmptyStackException e ) {
+                    // The root context is already loaded, so ignore the exception
+                }
+            }
+        });
+    }
+    
     protected void loadContexts() {
         withModule(new WithModule() {
             public void with(ModuleDefinition def, Stack<ModuleDefinition> parents) {
@@ -71,7 +92,6 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
             }
         });
     }
-    
     protected ApplicationContext loadContext(ModuleDefinition def, ApplicationContext parent) {
         ResourceApplicationContext context = new ResourceApplicationContext();
         
